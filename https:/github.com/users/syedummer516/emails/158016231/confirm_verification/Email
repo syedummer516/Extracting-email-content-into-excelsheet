@@ -1,0 +1,116 @@
+package practice;
+
+		import java.io.File;
+		import java.io.FileInputStream;
+		import java.io.FileNotFoundException;
+		import java.io.FileOutputStream;
+		import java.io.IOException;
+		import java.util.List;
+		import java.util.concurrent.TimeUnit;
+
+		import org.apache.poi.sl.usermodel.Sheet;
+		import org.apache.poi.ss.usermodel.Cell;
+		import org.apache.poi.ss.usermodel.Row;
+		import org.apache.poi.ss.usermodel.Workbook;
+		import org.apache.poi.ss.util.SheetUtil;
+		import org.apache.poi.xssf.usermodel.XSSFSheet;
+		import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+		import org.openqa.selenium.By;
+		import org.openqa.selenium.WebDriver;
+		import org.openqa.selenium.WebElement;
+		import org.openqa.selenium.chrome.ChromeDriver;
+		 
+		public class Email {
+		 
+			public static void main (String [] args) throws Exception{
+
+				System.setProperty("webdriver.chrome.driver","./software/Chromedriver.exe");
+				WebDriver driver = new ChromeDriver();
+				driver.manage().window().maximize();
+				driver.get("https://gmail.com/");
+				driver.manage().timeouts().implicitlyWait(10,TimeUnit.SECONDS);
+				
+				driver.findElement(By.id("identifierId")).sendKeys("your email id");
+				Thread.sleep(500);
+				driver.findElement(By.xpath("//div[@class=\"VfPpkd-RLmnJb\"]")).click();
+				Thread.sleep(3000);
+				driver.findElement(By.name("password")).sendKeys("your password");
+				Thread.sleep(3000);
+				//driver.findElement(By.linkText("Next")).click();
+				driver.findElement(By.xpath("//div[@id='passwordNext']/div/button/div[2]")).click();
+				Thread.sleep(3000);
+				
+				File file=new File("C:\\Users\\KINGSMEN\\eclipse-workspace\\First\\excel\\Exceldata.xlsx");
+				FileInputStream FIS= new FileInputStream(file);
+				XSSFWorkbook WB=new XSSFWorkbook(FIS);
+				XSSFSheet S1=WB.getSheet("Sheet1");
+				
+				
+				List<WebElement> AllMails = driver.findElement(By.xpath("(//table/tbody)[7]")).findElements(By.tagName("tr"));
+				int i=0;
+				for(WebElement eMail:AllMails)
+				{
+					eMail.click();
+					Thread.sleep(5000);
+					
+					
+					
+					System.out.println("===================================================================");
+					
+					String copiedText = driver.findElement(By.xpath("//span[@class='go']")).getText().toString();
+					System.out.println("from :"+copiedText);
+					S1.createRow(i).createCell(0).setCellValue("from :"+copiedText);
+					
+					driver.findElement(By.xpath("//img[@class='ajz']")).click();
+			
+					String copiedText1 = driver.findElement(By.xpath("/html/body/div[7]/div[3]/div/div[2]/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div[2]/div/table/tr/td[1]/div[2]/div[2]/div/div[3]/div/div/div/div/div/div[1]/div[2]/div[2]/div/table/tbody/tr[2]/td[2]/span/span")).getText().toString();
+					System.out.println("to :"+copiedText1);
+					S1.getRow(i).createCell(1).setCellValue("to :"+copiedText1);
+			
+					
+					String copiedText2 = driver.findElement(By.xpath("/html/body/div[7]/div[3]/div/div[2]/div[1]/div[2]/div/div/div/div/div[2]/div/div[1]/div/div[2]/div/table/tr/td[1]/div[2]/div[2]/div/div[3]/div/div/div/div/div/div[1]/div[2]/div[2]/div/table/tbody/tr[3]/td[2]/span")).getAttribute("innerText");
+					System.out.println("date :"+copiedText2);
+					S1.getRow(i).createCell(2).setCellValue("date :"+copiedText2);
+					
+					String copiedText3 = driver.findElement(By.xpath("//h2[@class='hP']")).getAttribute("innerText");
+					System.out.println("Subject :"+copiedText3);
+					S1.getRow(i).createCell(3).setCellValue("Subject :"+copiedText3);
+					
+				String copiedText4=null;
+				try{
+						copiedText4= driver.findElement(By.xpath("//div[@dir='auto']")).getText().toString();
+						System.out.println("body :"+copiedText4);
+					}catch(Exception E1) {System.out.println("body : no Data in Body");}
+					S1.getRow(i).createCell(4).setCellValue("body :"+copiedText4);
+					
+					
+					
+					System.out.println("===================================================================");
+					
+					
+					
+
+					List<WebElement> InboxSearch=driver.findElements(By.tagName("a"));
+					for(WebElement Inbox:InboxSearch)
+					{
+						String InboxValue=Inbox.getText().toString();
+						if(InboxValue.equalsIgnoreCase("Inbox"))
+						{
+							Inbox.click();
+							break;
+						}
+					}
+					Thread.sleep(2000);
+					i=i+1;
+				}
+				
+				FileOutputStream FOS=new FileOutputStream(file);
+				WB.write(FOS);
+				FOS.close();
+				WB.close();
+				
+				System.out.println("Good");
+
+	}
+
+}
